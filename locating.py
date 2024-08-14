@@ -18,3 +18,5 @@ for result in results:
     obb = result.obb  # Oriented boxes object for OBB outputs
     result.show()  # display to screen
     result.save(filename="result.jpg")  # save to disk
+
+    
