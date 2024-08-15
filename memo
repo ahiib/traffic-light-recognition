@@ -1,0 +1,5 @@
+red 10识别成green: 加一个当识别出多个红绿灯时， 选取bounding box中心xy离图像中心最近的一个
+red 8识别成green: 红灯太暗， 周围白框蓝天很亮没有过滤掉
+red 5 unspotted
+red 9 unspotted
+*下载的网络图片中有很多正常使用不会遇到的角度， 导致识别不出或者光线太暗太亮
