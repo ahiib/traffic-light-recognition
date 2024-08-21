@@ -40,7 +40,7 @@ def traffic_light_recognition(img):
     #Locating the traffic light
     model = YOLO("yolov8n.pt")
 
-    results = model(img, stream=True,classes=9)
+    results = model(img, stream=True,classes=9,verbose=False)
 
     for result in results:
         boxes = result.boxes
