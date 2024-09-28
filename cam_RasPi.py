@@ -1,31 +1,21 @@
+#import sys
+#sys.path.append('/home/andymeng/miniconda3/envs/ulpy3.8/lib/python3.8/site-packages')
+from picamera2 import Picamera2
 import cv2
 import os
 from ultralytics import YOLO
 import numpy as np
 import matplotlib.pylab as plt
- 
-#Capturing the frames
-def video_recognition(video):
-    vidcap = cv2.VideoCapture(video)
-    count = 0
-    green,red = 0,0
-    timeF = 24
-    while vidcap.isOpened():
-        success, image = vidcap.read()
-        if success:
-            if count % timeF == 0:
-                res = traffic_light_recognition(image)
-                if res != None:
-                    if res:
-                        green += 1
-                    else:
-                        red += 1
-            count += 1
-        else:
-            break
-    print("green: "+str(green)+" red: "+str(red))
-    cv2.destroyAllWindows()
-    vidcap.release()
+
+ncnn_model = YOLO("yolov8n_ncnn_model",task="detect")
+
+# Initialize the Picamera2
+picam2 = Picamera2()
+picam2.preview_configuration.main.size = (640,480)
+picam2.preview_configuration.main.format = "RGB888"
+picam2.preview_configuration.align()
+picam2.configure("preview")
+picam2.start()
 
 #RGB to grayscale image
 def rgb2gray(rgb):
@@ -34,11 +24,10 @@ def rgb2gray(rgb):
 def traffic_light_recognition(img):
     
     #Locating the traffic light
-    model = YOLO("yolov8n.pt")
-
-    results = model(img, stream=True,classes=9,verbose=False)
-
+    results = ncnn_model(img, stream=True,classes=9,verbose=False)
+    
     for result in results:
+
         boxes = result.boxes
         #result.show()
 
@@ -99,4 +88,29 @@ def traffic_light_recognition(img):
 
             return(go)
 
-video_recognition('video_traffic_light.mp4')
+while True:
+    # Capture frame-by-frame
+    frame = picam2.capture_array()
+
+    results = ncnn_model(frame,classes=9,verbose=False)
+
+    # Visualize the results on the frame
+    annotated_frame = results[0].plot()
+
+    # Display the resulting frame
+    cv2.imshow("Camera", annotated_frame)
+
+    res = traffic_light_recognition(frame)
+
+    if(res!=None):
+        if(res):
+            print("green")
+        else:
+            print("red")
+
+    # Break the loop if 'q' is pressed
+    if cv2.waitKey(1) == ord("q"):
+        break
+
+# Release resources and close windows
+cv2.destroyAllWindows()
